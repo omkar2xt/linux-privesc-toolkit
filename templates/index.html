@@ -1,0 +1,634 @@
+<!doctype html>
+<html lang="en">
+  <head>
+    <meta charset="UTF-8" />
+    <meta name="viewport" content="width=device-width, initial-scale=1.0" />
+    <title>Linux Privilege Escalation Detection Toolkit</title>
+    <style>
+      * {
+        margin: 0;
+        padding: 0;
+        box-sizing: border-box;
+      }
+
+      body {
+        font-family:
+          -apple-system, BlinkMacSystemFont, "Segoe UI", Roboto,
+          "Helvetica Neue", Arial, sans-serif;
+        background: linear-gradient(135deg, #667eea 0%, #764ba2 100%);
+        min-height: 100vh;
+        padding: 20px;
+      }
+
+      .container {
+        max-width: 1200px;
+        margin: 0 auto;
+      }
+
+      .header {
+        background: white;
+        border-radius: 12px;
+        padding: 30px;
+        margin-bottom: 20px;
+        box-shadow: 0 10px 30px rgba(0, 0, 0, 0.1);
+      }
+
+      .header h1 {
+        color: #2d3748;
+        font-size: 28px;
+        margin-bottom: 8px;
+      }
+
+      .header p {
+        color: #718096;
+        font-size: 14px;
+      }
+
+      .badge {
+        display: inline-block;
+        padding: 4px 12px;
+        border-radius: 12px;
+        font-size: 12px;
+        font-weight: 600;
+        margin-left: 10px;
+      }
+
+      .badge.demo {
+        background: #fed7d7;
+        color: #c53030;
+      }
+
+      .badge.local {
+        background: #c6f6d5;
+        color: #22543d;
+      }
+
+      .card {
+        background: white;
+        border-radius: 12px;
+        padding: 25px;
+        margin-bottom: 20px;
+        box-shadow: 0 10px 30px rgba(0, 0, 0, 0.1);
+      }
+
+      .card h2 {
+        color: #2d3748;
+        font-size: 20px;
+        margin-bottom: 15px;
+      }
+
+      .button-group {
+        display: flex;
+        gap: 10px;
+        flex-wrap: wrap;
+        margin-bottom: 20px;
+      }
+
+      button {
+        background: #667eea;
+        color: white;
+        border: none;
+        padding: 12px 24px;
+        border-radius: 8px;
+        font-size: 14px;
+        font-weight: 600;
+        cursor: pointer;
+        transition: all 0.3s;
+      }
+
+      button:hover {
+        background: #5568d3;
+        transform: translateY(-2px);
+        box-shadow: 0 4px 12px rgba(102, 126, 234, 0.4);
+      }
+
+      button:disabled {
+        background: #cbd5e0;
+        cursor: not-allowed;
+        transform: none;
+      }
+
+      button.secondary {
+        background: #48bb78;
+      }
+
+      button.secondary:hover {
+        background: #38a169;
+      }
+
+      button.info {
+        background: #4299e1;
+      }
+
+      button.info:hover {
+        background: #3182ce;
+      }
+
+      .status {
+        display: flex;
+        align-items: center;
+        gap: 10px;
+        padding: 15px;
+        background: #f7fafc;
+        border-radius: 8px;
+        margin-bottom: 20px;
+      }
+
+      .status-dot {
+        width: 12px;
+        height: 12px;
+        border-radius: 50%;
+        background: #48bb78;
+        animation: pulse 2s infinite;
+      }
+
+      @keyframes pulse {
+        0%,
+        100% {
+          opacity: 1;
+        }
+        50% {
+          opacity: 0.5;
+        }
+      }
+
+      .loading {
+        display: none;
+        text-align: center;
+        padding: 40px;
+      }
+
+      .spinner {
+        border: 4px solid #f3f3f3;
+        border-top: 4px solid #667eea;
+        border-radius: 50%;
+        width: 40px;
+        height: 40px;
+        animation: spin 1s linear infinite;
+        margin: 0 auto 20px;
+      }
+
+      @keyframes spin {
+        0% {
+          transform: rotate(0deg);
+        }
+        100% {
+          transform: rotate(360deg);
+        }
+      }
+
+      .results {
+        display: none;
+      }
+
+      .summary {
+        display: grid;
+        grid-template-columns: repeat(auto-fit, minmax(150px, 1fr));
+        gap: 15px;
+        margin-bottom: 20px;
+      }
+
+      .summary-item {
+        padding: 15px;
+        border-radius: 8px;
+        text-align: center;
+      }
+
+      .summary-item.critical {
+        background: #fed7d7;
+        color: #c53030;
+      }
+
+      .summary-item.high {
+        background: #feebc8;
+        color: #c05621;
+      }
+
+      .summary-item.medium {
+        background: #fefcbf;
+        color: #d69e2e;
+      }
+
+      .summary-item.low {
+        background: #bee3f8;
+        color: #2c5282;
+      }
+
+      .summary-item.info {
+        background: #e2e8f0;
+        color: #4a5568;
+      }
+
+      .summary-item .count {
+        font-size: 32px;
+        font-weight: bold;
+      }
+
+      .summary-item .label {
+        font-size: 12px;
+        text-transform: uppercase;
+        margin-top: 5px;
+      }
+
+      .findings {
+        max-height: 500px;
+        overflow-y: auto;
+      }
+
+      .finding {
+        padding: 15px;
+        border-left: 4px solid #e2e8f0;
+        margin-bottom: 10px;
+        background: #f7fafc;
+        border-radius: 4px;
+      }
+
+      .finding.critical {
+        border-left-color: #c53030;
+      }
+      .finding.high {
+        border-left-color: #c05621;
+      }
+      .finding.medium {
+        border-left-color: #d69e2e;
+      }
+      .finding.low {
+        border-left-color: #2c5282;
+      }
+      .finding.info {
+        border-left-color: #4a5568;
+      }
+
+      .finding h3 {
+        font-size: 16px;
+        color: #2d3748;
+        margin-bottom: 8px;
+      }
+
+      .finding .severity {
+        display: inline-block;
+        padding: 2px 8px;
+        border-radius: 4px;
+        font-size: 11px;
+        font-weight: 600;
+        margin-bottom: 8px;
+      }
+
+      .finding .severity.critical {
+        background: #fed7d7;
+        color: #c53030;
+      }
+      .finding .severity.high {
+        background: #feebc8;
+        color: #c05621;
+      }
+      .finding .severity.medium {
+        background: #fefcbf;
+        color: #d69e2e;
+      }
+      .finding .severity.low {
+        background: #bee3f8;
+        color: #2c5282;
+      }
+      .finding .severity.info {
+        background: #e2e8f0;
+        color: #4a5568;
+      }
+
+      .finding .evidence {
+        background: white;
+        padding: 10px;
+        border-radius: 4px;
+        font-family: "Courier New", monospace;
+        font-size: 12px;
+        white-space: pre-wrap;
+        margin: 8px 0;
+        color: #4a5568;
+      }
+
+      .finding .recommendation {
+        color: #718096;
+        font-size: 13px;
+        font-style: italic;
+      }
+
+      .download-links {
+        display: flex;
+        gap: 10px;
+        margin-top: 20px;
+        padding-top: 20px;
+        border-top: 1px solid #e2e8f0;
+      }
+
+      .download-links a {
+        color: #667eea;
+        text-decoration: none;
+        font-size: 14px;
+        font-weight: 600;
+      }
+
+      .download-links a:hover {
+        text-decoration: underline;
+      }
+
+      .error {
+        display: none;
+        background: #fed7d7;
+        color: #c53030;
+        padding: 15px;
+        border-radius: 8px;
+        margin-bottom: 20px;
+      }
+
+      .api-info {
+        background: #edf2f7;
+        padding: 15px;
+        border-radius: 8px;
+        margin-top: 20px;
+      }
+
+      .api-info h3 {
+        font-size: 14px;
+        color: #2d3748;
+        margin-bottom: 10px;
+      }
+
+      .api-info code {
+        background: white;
+        padding: 2px 6px;
+        border-radius: 4px;
+        font-size: 12px;
+        color: #667eea;
+      }
+
+      .api-info ul {
+        list-style: none;
+        margin-top: 10px;
+      }
+
+      .api-info li {
+        padding: 5px 0;
+        color: #4a5568;
+        font-size: 13px;
+      }
+
+      @media (max-width: 768px) {
+        .button-group {
+          flex-direction: column;
+        }
+
+        button {
+          width: 100%;
+        }
+
+        .summary {
+          grid-template-columns: repeat(2, 1fr);
+        }
+      }
+    </style>
+  </head>
+  <body>
+    <div class="container">
+      <div class="header">
+        <h1>
+          🔒 Linux Privilege Escalation Detection Toolkit
+          <span class="badge" id="modeBadge">Loading...</span>
+        </h1>
+        <p>
+          Detection-only security auditing toolkit for authorized environments
+        </p>
+      </div>
+
+      <div class="card">
+        <h2>Scanner Control</h2>
+
+        <div class="status">
+          <div class="status-dot"></div>
+          <span id="statusText">Checking health...</span>
+        </div>
+
+        <div class="button-group">
+          <button onclick="runScan()" id="scanBtn">🔍 Run Security Scan</button>
+          <button onclick="checkHealth()" class="info">❤️ Health Check</button>
+          <button onclick="getInfo()" class="info">ℹ️ API Info</button>
+        </div>
+
+        <div class="error" id="error"></div>
+
+        <div class="loading" id="loading">
+          <div class="spinner"></div>
+          <p>Running security scan...</p>
+        </div>
+
+        <div class="results" id="results">
+          <h3>Scan Results</h3>
+          <div class="summary" id="summary"></div>
+
+          <div class="download-links">
+            <a
+              href="#"
+              onclick="
+                downloadReport('json');
+                return false;
+              "
+              >📄 Download JSON</a
+            >
+            <a
+              href="#"
+              onclick="
+                downloadReport('txt');
+                return false;
+              "
+              >📝 Download TXT</a
+            >
+            <a
+              href="#"
+              onclick="
+                downloadReport('html');
+                return false;
+              "
+              >🌐 Download HTML</a
+            >
+          </div>
+
+          <h3 style="margin-top: 20px">Findings</h3>
+          <div class="findings" id="findings"></div>
+        </div>
+      </div>
+
+      <div class="card">
+        <h2>API Documentation</h2>
+        <div class="api-info">
+          <h3>Available Endpoints:</h3>
+          <ul>
+            <li><code>GET /health</code> - Health check endpoint</li>
+            <li><code>GET /api/info</code> - API information</li>
+            <li><code>POST /api/scan</code> - Run security scan</li>
+            <li>
+              <code>GET /api/report?format=json</code> - Get report (JSON)
+            </li>
+            <li><code>GET /api/report?format=txt</code> - Get report (TXT)</li>
+            <li>
+              <code>GET /api/report?format=html</code> - Get report (HTML)
+            </li>
+          </ul>
+        </div>
+      </div>
+
+      <div class="card">
+        <h2>⚠️ Security Notice</h2>
+        <p style="color: #4a5568; line-height: 1.6">
+          This toolkit is designed for
+          <strong>authorized security auditing</strong> and
+          <strong>controlled environments only</strong>. It detects
+          misconfigurations but does <strong>NOT</strong> execute exploits. Only
+          use on systems you own or have explicit permission to test.
+        </p>
+      </div>
+    </div>
+
+    <script>
+      const API_BASE = window.location.origin;
+
+      // Check health on page load
+      window.onload = function () {
+        checkHealth();
+      };
+
+      async function checkHealth() {
+        try {
+          const response = await fetch(`${API_BASE}/health`);
+          const data = await response.json();
+
+          document.getElementById("statusText").textContent =
+            `Status: ${data.status} | Mode: ${data.mode}`;
+
+          const badge = document.getElementById("modeBadge");
+          badge.textContent = data.mode.toUpperCase();
+          badge.className = `badge ${data.mode}`;
+
+          showSuccess("Health check successful");
+        } catch (error) {
+          showError("Failed to connect to API: " + error.message);
+          document.getElementById("statusText").textContent = "Status: Offline";
+        }
+      }
+
+      async function getInfo() {
+        try {
+          const response = await fetch(`${API_BASE}/api/info`);
+          const data = await response.json();
+
+          alert(
+            `API Information:\n\n` +
+              `Service: ${data.service}\n` +
+              `Version: ${data.version}\n` +
+              `Mode: ${data.mode}\n` +
+              `Scanner Available: ${data.scanner_available}\n` +
+              `Modules: ${data.modules.length}`,
+          );
+        } catch (error) {
+          showError("Failed to get API info: " + error.message);
+        }
+      }
+
+      async function runScan() {
+        const scanBtn = document.getElementById("scanBtn");
+        const loading = document.getElementById("loading");
+        const results = document.getElementById("results");
+        const error = document.getElementById("error");
+
+        // Reset UI
+        scanBtn.disabled = true;
+        loading.style.display = "block";
+        results.style.display = "none";
+        error.style.display = "none";
+
+        try {
+          const response = await fetch(`${API_BASE}/api/scan`, {
+            method: "POST",
+            headers: {
+              "Content-Type": "application/json",
+            },
+            body: JSON.stringify({ type: "full" }),
+          });
+
+          const data = await response.json();
+
+          if (data.success) {
+            displayResults(data);
+          } else {
+            showError(data.error || "Scan failed");
+          }
+        } catch (err) {
+          showError("Failed to run scan: " + err.message);
+        } finally {
+          scanBtn.disabled = false;
+          loading.style.display = "none";
+        }
+      }
+
+      function displayResults(data) {
+        const results = document.getElementById("results");
+        const summary = document.getElementById("summary");
+        const findings = document.getElementById("findings");
+
+        // Display summary
+        summary.innerHTML = "";
+        const severities = ["CRITICAL", "HIGH", "MEDIUM", "LOW", "INFO"];
+
+        severities.forEach((sev) => {
+          const count = data.summary[sev] || 0;
+          if (count > 0 || sev === "INFO") {
+            summary.innerHTML += `
+                        <div class="summary-item ${sev.toLowerCase()}">
+                            <div class="count">${count}</div>
+                            <div class="label">${sev}</div>
+                        </div>
+                    `;
+          }
+        });
+
+        // Display findings
+        findings.innerHTML = "";
+        data.findings.forEach((finding) => {
+          findings.innerHTML += `
+                    <div class="finding ${finding.severity.toLowerCase()}">
+                        <span class="severity ${finding.severity.toLowerCase()}">${finding.severity}</span>
+                        <h3>${escapeHtml(finding.title)}</h3>
+                        <div class="evidence">${escapeHtml(finding.evidence)}</div>
+                        <div class="recommendation">💡 ${escapeHtml(finding.recommendation)}</div>
+                    </div>
+                `;
+        });
+
+        results.style.display = "block";
+        results.scrollIntoView({ behavior: "smooth" });
+      }
+
+      function downloadReport(format) {
+        window.open(`${API_BASE}/api/report?format=${format}`, "_blank");
+      }
+
+      function showError(message) {
+        const error = document.getElementById("error");
+        error.textContent = message;
+        error.style.display = "block";
+        setTimeout(() => {
+          error.style.display = "none";
+        }, 5000);
+      }
+
+      function showSuccess(message) {
+        // Could implement a success toast here
+        console.log(message);
+      }
+
+      function escapeHtml(text) {
+        const div = document.createElement("div");
+        div.textContent = text;
+        return div.innerHTML;
+      }
+    </script>
+  </body>
+</html>

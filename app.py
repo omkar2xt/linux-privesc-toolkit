@@ -8,7 +8,7 @@ import platform
 import sys
 from datetime import datetime
 
-from flask import Flask, jsonify, request
+from flask import Flask, jsonify, request, render_template
 
 # Configure logging
 logging.basicConfig(
@@ -74,11 +74,11 @@ def get_demo_findings():
 def run_scan_modules():
     """Execute all scanner modules safely."""
     findings = []
-    
+
     if not SCANNER_AVAILABLE or IS_DEPLOYED:
         logger.info("Running in demo mode")
         return get_demo_findings()
-    
+
     logger.info("Starting full scanner modules")
     for module in MODULES:
         name = module.__name__.split(".")[-1]
@@ -93,7 +93,7 @@ def run_scan_modules():
                 "severity": "INFO",
                 "recommendation": "Check module configuration."
             })
-    
+
     findings.sort(key=lambda f: ORDER.get(f["severity"], 999))
     logger.info(f"Scan completed with {len(findings)} findings")
     return findings
@@ -101,19 +101,8 @@ def run_scan_modules():
 
 @app.route('/')
 def index():
-    """Root endpoint with API information."""
-    return jsonify({
-        "service": "Linux Privilege Escalation Detection Toolkit",
-        "version": "1.0.0",
-        "mode": "demo" if IS_DEPLOYED else "local",
-        "endpoints": {
-            "health": "/health",
-            "info": "/api/info",
-            "scan": "/api/scan (POST)",
-            "report": "/api/report"
-        },
-        "documentation": "https://github.com/yourusername/linux-privesc-toolkit"
-    })
+    """Serve the dashboard HTML page."""
+    return render_template('index.html')
 
 
 @app.route('/health')
