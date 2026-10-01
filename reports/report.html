@@ -1,0 +1,85 @@
+<!DOCTYPE html>
+<html lang="en">
+<head>
+<meta charset="UTF-8">
+<meta name="viewport" content="width=device-width, initial-scale=1">
+<title>Linux Privilege Escalation Scan Report</title>
+<style>
+  body { font-family: -apple-system, Segoe UI, Arial, sans-serif; background:#f4f6f7; color:#1c2833; margin:0; padding:2rem; }
+  h1 { margin-bottom:0.2rem; }
+  .meta { color:#566573; margin-bottom:1.5rem; }
+  .chips { margin-bottom:2rem; }
+  .chip { color:white; padding:0.3rem 0.8rem; border-radius:999px; margin-right:0.5rem; font-size:0.85rem; }
+  .finding { background:white; border-left:6px solid #333; border-radius:6px; padding:1rem 1.2rem; margin-bottom:1rem; box-shadow:0 1px 3px rgba(0,0,0,0.08); }
+  .finding h3 { margin:0.2rem 0 0.6rem 0; }
+  .badge { display:inline-block; color:white; font-size:0.75rem; font-weight:bold; padding:0.15rem 0.6rem; border-radius:4px; }
+  pre { white-space:pre-wrap; background:#f8f9f9; padding:0.6rem; border-radius:4px; font-size:0.85rem; overflow-x:auto; }
+  .disclaimer { margin-top:2rem; padding:1rem; background:#fdf2e9; border-radius:6px; font-size:0.9rem; }
+</style>
+</head>
+<body>
+  <h1>Linux Privilege Escalation Scan Report</h1>
+  <div class="meta">Generated 2026-10-01 09:13:52 &middot; Detection only, no exploitation performed.</div>
+  <div class="chips"><span class="chip" style="background:#5d6d7e">INFO: 8</span></div>
+  
+        <div class="finding" style="border-left-color:#5d6d7e">
+          <div class="badge" style="background:#5d6d7e">INFO</div>
+          <h3>Module error: system_info</h3>
+          <pre>module &#x27;os&#x27; has no attribute &#x27;getuid&#x27;</pre>
+          <p><strong>Recommendation:</strong> Check the module.</p>
+        </div>
+        <div class="finding" style="border-left-color:#5d6d7e">
+          <div class="badge" style="background:#5d6d7e">INFO</div>
+          <h3>/etc/passwd and /etc/shadow permissions reviewed</h3>
+          <pre>Both files have expected, non-permissive permissions.</pre>
+          <p><strong>Recommendation:</strong> None.</p>
+        </div>
+        <div class="finding" style="border-left-color:#5d6d7e">
+          <div class="badge" style="background:#5d6d7e">INFO</div>
+          <h3>Sudo rules could not be listed without a password</h3>
+          <pre>error: unexpected argument &#x27;-n&#x27; found
+
+  tip: to pass &#x27;-n&#x27; as a value, use &#x27;-- -n&#x27;
+
+Usage: sudo [OPTIONS] [COMMANDLINE]... [COMMAND]
+
+For more information, try &#x27;help&#x27;.</pre>
+          <p><strong>Recommendation:</strong> Normal for a locked-down user. No passwordless sudo access found.</p>
+        </div>
+        <div class="finding" style="border-left-color:#5d6d7e">
+          <div class="badge" style="background:#5d6d7e">INFO</div>
+          <h3>Systemd services reviewed</h3>
+          <pre>No root-run service pointing to a world- or group-writable executable was found.</pre>
+          <p><strong>Recommendation:</strong> None.</p>
+        </div>
+        <div class="finding" style="border-left-color:#5d6d7e">
+          <div class="badge" style="background:#5d6d7e">INFO</div>
+          <h3>Cron jobs reviewed</h3>
+          <pre>No root-run cron job pointing to a world- or group-writable script was found.</pre>
+          <p><strong>Recommendation:</strong> None.</p>
+        </div>
+        <div class="finding" style="border-left-color:#5d6d7e">
+          <div class="badge" style="background:#5d6d7e">INFO</div>
+          <h3>Kernel version</h3>
+          <pre>Running kernel: 11</pre>
+          <p><strong>Recommendation:</strong> Keep the kernel updated via the distribution&#x27;s package manager.</p>
+        </div>
+        <div class="finding" style="border-left-color:#5d6d7e">
+          <div class="badge" style="background:#5d6d7e">INFO</div>
+          <h3>No known kernel LPE CVEs matched</h3>
+          <pre>Kernel 11 did not match any entry in the local reference list. This does not guarantee the kernel is unaffected by all vulnerabilities, only that it is not in this project&#x27;s small demonstration list.</pre>
+          <p><strong>Recommendation:</strong> Cross-check with a maintained CVE feed for a complete assessment.</p>
+        </div>
+        <div class="finding" style="border-left-color:#5d6d7e">
+          <div class="badge" style="background:#5d6d7e">INFO</div>
+          <h3>getcap not installed</h3>
+          <pre>The &#x27;getcap&#x27; command was not found.</pre>
+          <p><strong>Recommendation:</strong> Install it: sudo apt install libcap2-bin</p>
+        </div>
+  <div class="disclaimer">
+    This report lists potential misconfigurations for review. It does not confirm exploitability
+    and does not execute any exploit code. Verify each finding manually before making changes on
+    a production system.
+  </div>
+</body>
+</html>

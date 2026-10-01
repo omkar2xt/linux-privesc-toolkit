@@ -1,0 +1,65 @@
+{
+  "_comment": "Detection rules used by the scanner modules. Edit this file to tune detection without touching code.",
+  "suid_known_normal": [
+    "passwd", "sudo", "su", "mount", "umount", "chsh", "chfn", "newgrp",
+    "gpasswd", "chage", "expiry", "wall", "write.ul", "ssh-agent",
+    "ssh-keysign", "fusermount3", "fusermount", "ping", "dotlockfile",
+    "dbus-daemon-launch-helper", "crontab", "unix_chkpwd", "pkexec",
+    "polkit-agent-helper-1", "mount.nfs", "mount.cifs", "bsd-write",
+    "exim4", "pppd", "ntfs-3g", "auth_pam_tool", "Xorg.wrap",
+    "chrome-sandbox", "plocate",
+    "kismet_cap_ti_cc_2540", "kismet_cap_rz_killerbee",
+    "kismet_cap_nrf_mousejack", "kismet_cap_nrf_51822",
+    "kismet_cap_ubertooth_one", "kismet_cap_linux_bluetooth",
+    "kismet_cap_ti_cc_2531", "kismet_cap_linux_wifi",
+    "kismet_cap_hak5_wifi_coconut", "kismet_cap_nxp_kw41z",
+    "kismet_cap_nrf_52840"
+  ],
+  "_suid_review_recommended": [
+    "rsh-redone-rsh", "rsh-redone-rlogin"
+  ],
+  "_suid_review_recommended_note": "Not dangerous by default, but these legacy remote-shell tools are rarely needed on a modern system. Left OUT of known_normal on purpose so the scanner still flags them as MEDIUM for the analyst to confirm they're actually required.",
+  "risky_programs": [
+    "find", "vim", "vi", "nano", "python", "python3", "perl", "bash",
+    "sh", "dash", "less", "more", "awk", "nmap", "cp", "env", "tar",
+    "ruby", "php", "node", "man", "nc", "netcat", "tee", "dd", "mv",
+    "chmod", "chown"
+  ],
+  "capability_dangerous": {
+    "cap_setuid": "Can change its user ID (become root).",
+    "cap_setgid": "Can change its group ID.",
+    "cap_dac_override": "Ignores file read/write/execute permission checks.",
+    "cap_dac_read_search": "Can read any file, ignoring permissions.",
+    "cap_sys_admin": "Very broad administrative power (close to root).",
+    "cap_sys_ptrace": "Can inspect and modify other processes.",
+    "cap_chown": "Can change ownership of any file.",
+    "cap_fowner": "Bypasses ownership checks on files."
+  },
+  "kernel_cves": [
+    {
+      "cve": "CVE-2022-0847",
+      "name": "Dirty Pipe",
+      "min_version": "5.8.0",
+      "max_version": "5.16.11",
+      "severity": "CRITICAL",
+      "note": "Local privilege escalation via a page-cache overwrite bug. Patched in 5.16.11, 5.15.25, 5.10.102."
+    },
+    {
+      "cve": "CVE-2016-5195",
+      "name": "Dirty COW",
+      "min_version": "2.6.22",
+      "max_version": "4.8.3",
+      "severity": "CRITICAL",
+      "note": "Race condition in copy-on-write handling allowing write access to read-only mappings."
+    },
+    {
+      "cve": "CVE-2021-3493",
+      "name": "OverlayFS LPE",
+      "min_version": "5.0.0",
+      "max_version": "5.11.0",
+      "severity": "HIGH",
+      "note": "Missing permission check in the OverlayFS filesystem allows privilege escalation."
+    }
+  ],
+  "_kernel_cves_disclaimer": "This is a small static reference list for demonstration, not a live feed. A production version should query a maintained source such as the NVD API."
+}

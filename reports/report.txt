@@ -1,0 +1,50 @@
+REPORT generated 2026-10-01 09:13:52
+============================================================
+SUMMARY: INFO=8
+============================================================
+
+[INFO] Module error: system_info
+Evidence:
+module 'os' has no attribute 'getuid'
+Recommendation: Check the module.
+
+[INFO] /etc/passwd and /etc/shadow permissions reviewed
+Evidence:
+Both files have expected, non-permissive permissions.
+Recommendation: None.
+
+[INFO] Sudo rules could not be listed without a password
+Evidence:
+error: unexpected argument '-n' found
+
+  tip: to pass '-n' as a value, use '-- -n'
+
+Usage: sudo [OPTIONS] [COMMANDLINE]... [COMMAND]
+
+For more information, try 'help'.
+Recommendation: Normal for a locked-down user. No passwordless sudo access found.
+
+[INFO] Systemd services reviewed
+Evidence:
+No root-run service pointing to a world- or group-writable executable was found.
+Recommendation: None.
+
+[INFO] Cron jobs reviewed
+Evidence:
+No root-run cron job pointing to a world- or group-writable script was found.
+Recommendation: None.
+
+[INFO] Kernel version
+Evidence:
+Running kernel: 11
+Recommendation: Keep the kernel updated via the distribution's package manager.
+
+[INFO] No known kernel LPE CVEs matched
+Evidence:
+Kernel 11 did not match any entry in the local reference list. This does not guarantee the kernel is unaffected by all vulnerabilities, only that it is not in this project's small demonstration list.
+Recommendation: Cross-check with a maintained CVE feed for a complete assessment.
+
+[INFO] getcap not installed
+Evidence:
+The 'getcap' command was not found.
+Recommendation: Install it: sudo apt install libcap2-bin
