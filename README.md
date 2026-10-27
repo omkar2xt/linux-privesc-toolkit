@@ -22,6 +22,9 @@ The project also provides a Flask-based demonstration API that illustrates the a
 
 > **Security principle:** Detect potential weaknesses, understand the evidence, and recommend corrective action — without executing privilege-escalation exploits.
 
+![Uploading image.png…]()
+
+
 ## 🎯 Project Objectives
 
 - Automate checks for common Linux privilege-escalation-related misconfigurations.
