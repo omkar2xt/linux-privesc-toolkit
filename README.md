@@ -1,368 +1,442 @@
-# Linux Privilege Escalation Detection Toolkit
+# 🛡️ Linux Privilege Escalation Detection Toolkit
 
-Detects Linux privilege-escalation-related **misconfigurations**. It does **not** execute exploits.
-Each finding has evidence, severity (INFO/LOW/MEDIUM/HIGH/CRITICAL) and a recommendation.
+### A Python-Based Linux Security Auditing Project
 
-## Project Description
+A modular, detection-only security toolkit designed to identify potential Linux privilege-escalation misconfigurations, analyze security evidence, and generate actionable audit reports.
 
-This is a **detection-only** Linux security auditing toolkit designed for authorized security assessments in controlled environments. It identifies common misconfigurations that could lead to privilege escalation but does **not** perform any exploitation.
+**Developed by Omkar Raju Gurav**
 
-## Architecture
+[GitHub Repository](https://github.com/omkar2xt/linux-privesc-toolkit)
 
-### Local/Kali Mode (Full Scanner)
+---
+
+## 📌 Project Overview
+
+Linux privilege escalation is a security concern that can arise when system permissions, privileged commands, scheduled tasks, services, or other configurations are improperly secured.
+
+The **Linux Privilege Escalation Detection Toolkit** is a Python-based security auditing project that examines selected Linux configurations for conditions that may introduce privilege-escalation risks.
+
+Instead of relying on a single check, the toolkit organizes security assessments into independent modules. The results are presented as structured findings containing evidence, severity classifications, and remediation recommendations.
+
+The project also provides a Flask-based demonstration API that illustrates the application's reporting and API workflow without executing security scans on the deployed server.
+
+> **Security principle:** Detect potential weaknesses, understand the evidence, and recommend corrective action — without executing privilege-escalation exploits.
+
+## 🎯 Project Objectives
+
+- Automate checks for common Linux privilege-escalation-related misconfigurations.
+- Organize security checks into modular Python components.
+- Provide evidence-based findings with severity classifications.
+- Generate readable reports in TXT, JSON, and HTML formats.
+- Support authorized local security assessments in a Linux environment.
+- Demonstrate API functionality through a restricted, sample-data-based deployment.
+- Maintain a detection-only design focused on security auditing and remediation guidance.
+
+## ✨ Key Features
+
+| Feature | Description |
+|---|---|
+| System Information | Collects user, UID, group, OS, kernel, and architecture information. |
+| SUID/SGID Analysis | Examines files with special permission bits against configured detection rules. |
+| Permission Auditing | Checks selected writable paths, sensitive file permissions, and home-directory permissions. |
+| Sudo Rule Analysis | Identifies potentially risky sudo configurations, including selected `NOPASSWD` and unrestricted rules. |
+| Service Configuration Checks | Examines selected root-run service configurations, writable executables, and insecure PATH entries. |
+| Cron Job Analysis | Checks selected root cron jobs for references to writable scripts. |
+| Kernel Reference Checks | Compares kernel versions with a local CVE reference list and basic end-of-life rules. |
+| Linux Capabilities | Identifies selected potentially dangerous file capabilities using `getcap`. |
+| Configurable Detection Rules | Uses JSON signatures for selected SUID/SGID, capability, and kernel checks. |
+| Multi-Format Reports | Generates text, JSON, and HTML security reports. |
+| Flask Demo API | Provides controlled demonstration findings and reporting endpoints. |
+
+The findings represent potential security issues and require contextual verification. A detection result does not automatically establish that a system is exploitable.
+
+## 🏗️ System Architecture
+
+The project separates local security scanning from the deployed demonstration service.
+
+### 1. Local Linux Scanner — Full Assessment
+
+The local scanner is intended for an authorized Linux environment with access to the system being inspected.
+
+```mermaid
+flowchart TD
+    A["Linux Host<br/>VirtualBox Environment"] --> B["main.py<br/>Scanner Entry Point"]
+    B --> C["Scanner Modules"]
+    C --> D["System Information"]
+    C --> E["SUID / SGID Analysis"]
+    C --> F["Permission and Sudo Checks"]
+    C --> G["Service and Cron Checks"]
+    C --> H["Kernel and Capability Checks"]
+    D --> I["Finding Analysis"]
+    E --> I
+    F --> I
+    G --> I
+    H --> I
+    I --> J["Security Findings"]
+    J --> K["TXT Report"]
+    J --> L["JSON Report"]
+    J --> M["HTML Report"]
 ```
-Kali Linux
-    ↓
-Python Security Scanner (main.py)
-    ↓
-Scanner Modules (modules/)
-    ↓
-Analysis Engine
-    ↓
-Security Findings
-    ↓
-Reports (reports/)
+
+**Workflow:**
+
+1. The scanner starts through `main.py`.
+2. Individual modules inspect their respective system configuration areas.
+3. Detection rules identify conditions that may indicate a security weakness.
+4. Findings are assembled with available evidence and recommendations.
+5. Reports are generated for further inspection.
+
+### 2. Deployed Demonstration API
+
+The web application uses a separate execution path.
+
+```mermaid
+flowchart TD
+    A["Browser or API Client"] --> B["Flask Backend<br/>app.py"]
+    B --> C["API Endpoints"]
+    C --> D["Health Check"]
+    C --> E["API Information"]
+    C --> F["Demonstration Scan"]
+    F --> G["Controlled Sample Findings"]
+    G --> H["JSON / TXT / HTML Response"]
+    C --> I["Report Endpoint"]
 ```
 
-### Deployed/Demo Mode (Safe API)
+**Important:** In deployed demo mode, the application returns controlled demonstration data rather than executing host security scans or arbitrary system commands. A successful API response demonstrates the API workflow, not a real assessment of the deployed host.
+
+## 📂 Repository Structure
+
+The repository is organized into an application entry point, independent scanner modules, configuration, reporting utilities, and deployment support.
+
+```text
+linux-privesc-toolkit/
+│
+├── main.py
+├── app.py
+├── demo.sh
+├── requirements.txt
+├── render.yaml
+├── README.md
+│
+├── config/
+│   └── signatures.json
+│
+├── modules/
+│   ├── __init__.py
+│   ├── system_info.py
+│   ├── suid_scan.py
+│   ├── permission_scan.py
+│   ├── sudo_scan.py
+│   ├── service_scan.py
+│   ├── cron_scan.py
+│   ├── kernel_scan.py
+│   ├── capability_scan.py
+│   ├── report_html.py
+│   └── config_loader.py
+│
+├── reports/
+│   ├── report.txt
+│   ├── report.json
+│   └── report.html
+│
+└── screenshots/
+    └── [Optional project screenshots]
 ```
-Browser/API Client
-    ↓
-Flask Backend (app.py)
-    ↓
-Safe predefined scanner/demo functions
-    ↓
-JSON/Report Response
+
+*The report files shown above are the expected output paths; they may be generated at runtime rather than committed to the repository. The `screenshots/` directory is optional.*
+
+### File and Directory Responsibilities
+
+| File or directory | Purpose |
+|---|---|
+| `main.py` | Entry point for the full local security scanner. |
+| `app.py` | Flask application and API entry point. |
+| `demo.sh` | Script for launching the documented demonstration workflow. |
+| `requirements.txt` | Python package dependencies for the backend. |
+| `render.yaml` | Deployment configuration, if present and configured. |
+| `config/signatures.json` | Configurable detection signatures for selected scanner modules. |
+| `modules/system_info.py` | Collects basic system and user information. |
+| `modules/suid_scan.py` | Examines SUID/SGID files. |
+| `modules/permission_scan.py` | Checks selected file and directory permission conditions. |
+| `modules/sudo_scan.py` | Examines selected sudo configuration risks. |
+| `modules/service_scan.py` | Checks selected service unit, executable permission, and PATH conditions. |
+| `modules/cron_scan.py` | Examines selected cron configurations and referenced writable scripts. |
+| `modules/kernel_scan.py` | Compares kernel versions with local reference rules. |
+| `modules/capability_scan.py` | Checks file capabilities using `getcap`. |
+| `modules/report_html.py` | Generates formatted HTML reports. |
+| `modules/config_loader.py` | Loads scanner configuration. |
+| `modules/__init__.py` | Marks the modules directory as a Python package. |
+| `reports/` | Destination for generated security reports. |
+| `screenshots/` | Optional screenshots of the application and reports. |
+
+## 🔍 Detection Modules
+
+### System Information
+
+Collects basic information about the current user and host, including user ID, groups, operating system, kernel version, and architecture.
+
+### SUID/SGID Checks
+
+Examines files with special permission bits and uses configured rules to identify files that may require additional security review.
+
+### File Permission Checks
+
+Examines selected world-writable files and directories, permissions associated with `/etc/passwd` and `/etc/shadow`, and home-directory permission conditions.
+
+### Sudo Configuration Checks
+
+Reviews selected sudo rules for potentially excessive privileges, including unrestricted permissions, `NOPASSWD` configurations, and commands that may provide shell access.
+
+### Service Configuration Checks
+
+Reviews selected systemd unit files for root-run services associated with writable executables and potentially insecure PATH entries.
+
+The current implementation reads unit files directly; it does not necessarily query the active systemd manager.
+
+### Cron Job Checks
+
+Examines selected system-wide and per-user cron configurations for jobs that reference scripts with potentially unsafe write permissions.
+
+### Kernel Version Checks
+
+Compares detected kernel versions against a local reference list of CVEs and applies basic end-of-life checks.
+
+The local reference list is limited and does not replace an up-to-date vulnerability assessment.
+
+### Linux Capabilities
+
+Uses `getcap` to inspect file capabilities and identify selected configurations that may warrant security review.
+
+## 📊 Findings and Reporting
+
+The toolkit is designed to present findings using a consistent structure.
+
+| Field | Purpose |
+|---|---|
+| Title | Identifies the detected condition. |
+| Evidence | Records details supporting the finding. |
+| Severity | Indicates the configured priority classification. |
+| Recommendation | Suggests an appropriate corrective action. |
+
+### Severity classifications
+
+- **INFO** — Informational observation.
+- **LOW** — Lower-priority condition requiring review.
+- **MEDIUM** — Condition warranting further investigation.
+- **HIGH** — Potentially significant security concern.
+- **CRITICAL** — Condition assigned the highest configured priority.
+
+These classifications are intended for triage and are not a substitute for a validated risk assessment.
+
+### Supported report formats
+
+- **TXT:** Plain-text findings for quick review.
+- **JSON:** Structured findings suitable for programmatic processing.
+- **HTML:** Formatted findings for browser-based review.
+
+The documented local report paths are:
+
+```text
+reports/report.txt
+reports/report.json
+reports/report.html
 ```
 
-## Modules
-- **system_info**: user, UID, groups, OS, kernel, architecture
-- **suid_scan**: SUID/SGID files (normal vs risky vs unrecognised)
-- **permission_scan**: world-writable files/directories, `/etc/passwd` & `/etc/shadow` permission
-  checks, and home-directory permission checks
-- **sudo_scan**: risky `sudo -l` rules (NOPASSWD, ALL, shell-capable commands)
-- **service_scan**: systemd services running as root with a world/group-writable executable,
-  plus insecure PATH variables (`.`, empty entries, world-writable PATH directories)
-- **cron_scan**: root cron jobs (`/etc/crontab`, `/etc/cron.d`, `/etc/cron.*`, and per-user
-  `crontab -l`) that point to a world- or group-writable script
-- **kernel_scan**: kernel version vs a local CVE reference list, plus a basic end-of-life
-  version check (see Limitations below)
-- **capability_scan**: dangerous file capabilities via `getcap`
+## ⚙️ Technology Stack
 
-Detection rules for suid_scan, capability_scan, and kernel_scan live in `config/signatures.json`,
-so you can tune or extend them without touching code.
+| Component | Technology |
+|---|---|
+| Programming language | Python |
+| Operating system | Linux |
+| Virtualization environment | Oracle VM VirtualBox |
+| Backend framework | Flask |
+| Production server | Gunicorn |
+| Detection approach | Rule-based security checks |
+| Detection configuration | JSON |
+| Report formats | TXT, JSON, HTML |
+| Deployment configuration | Render-compatible configuration |
 
-## Requirements
+## 💻 Development Environment
 
-### Local/Kali Mode
-- Debian/Ubuntu/Kali with Python 3
-- For capabilities: `sudo apt install libcap2-bin`
+**Local development and security testing environment**
 
-### Backend/Deployed Mode
-- Python 3.11+
-- Flask 3.0.0
-- Gunicorn 21.2.0
+The local scanner is designed to run inside a Linux virtual machine hosted by Oracle VM VirtualBox.
 
-## Local Setup (Kali Linux)
+```text
+Physical Computer
+       |
+       v
+Oracle VM VirtualBox
+       |
+       v
+Linux Virtual Machine
+       |
+       v
+Python Runtime
+       |
+       v
+Linux Privilege Escalation Detection Toolkit
+       |
+       v
+Security Findings and Reports
+```
 
-### Run the Full Scanner
+This isolated environment provides a controlled setting for examining Linux permissions, configurations, and detection behaviour.
+
+The actual distribution used for testing should be recorded accurately. If Kali Linux was your testing environment, document it as Kali Linux running inside Oracle VM VirtualBox.
+
+## 🚀 Installation and Usage
+
+### Prerequisites
+
+- A supported Linux distribution.
+- Python 3.
+- Appropriate permissions to inspect the intended system.
+- `libcap2-bin` for capability checks that depend on `getcap`.
+
+On Debian-based Linux distributions, install the optional capability utility:
+
 ```bash
+sudo apt update
+sudo apt install libcap2-bin
+```
+
+### Step 1: Clone the repository
+
+```bash
+git clone https://github.com/omkar2xt/linux-privesc-toolkit.git
 cd linux-privesc-toolkit
+```
+
+### Step 2: Run the local scanner
+
+```bash
 python3 main.py
 ```
 
-Reports are written to `reports/report.txt`, `reports/report.json`, and `reports/report.html`
-(open the HTML file in a browser for a styled, color-coded view).
+Review the generated reports in the `reports/` directory.
 
-### Run the Demo
+### Step 3: Run the demo script
+
 ```bash
 ./demo.sh
 ```
 
-## Backend Setup (Local Development)
+Inspect the script and follow its documented prerequisites if it cannot run as provided.
 
-### Install Dependencies
+### Step 4: Start the Flask backend
+
+Install the declared dependencies:
+
 ```bash
 pip install -r requirements.txt
 ```
 
-### Run Flask Development Server
+Launch the development server:
+
 ```bash
 python app.py
 ```
 
-The API will be available at `http://localhost:5000`
+The documented local API address is:
 
-### Run with Gunicorn (Production Mode)
+```text
+http://localhost:5000
+```
+
+## 🌐 API Reference
+
+The Flask backend documents the following endpoints.
+
+| Method | Endpoint | Purpose |
+|---|---|---|
+| GET | `/health` | Returns health information. |
+| GET | `/api/info` | Provides service and module information. |
+| POST | `/api/scan` | Demonstrates the documented scan request workflow. |
+| GET | `/api/report?format=json` | Retrieves a report in the requested format. |
+
+### Example request
+
 ```bash
-gunicorn app:app --bind 0.0.0.0:5000
-```
-
-## Deployment (Render)
-
-### Prerequisites
-1. Create a [Render](https://render.com) account
-2. Push your code to GitHub/GitLab
-
-### Deploy Steps
-
-1. **Connect Repository**
-   - Go to Render Dashboard
-   - Click "New +" → "Web Service"
-   - Connect your repository
-
-2. **Configure Service**
-   - **Name**: `linux-privesc-toolkit`
-   - **Environment**: `Python 3`
-   - **Build Command**: `pip install -r requirements.txt`
-   - **Start Command**: `gunicorn app:app --bind 0.0.0.0:$PORT`
-
-3. **Deploy**
-   - Click "Create Web Service"
-   - Render will automatically deploy using `render.yaml` if present
-
-4. **Verify Deployment**
-   - Once deployed, visit: `https://your-app-name.onrender.com/health`
-   - You should see: `{"status": "healthy", ...}`
-
-### Environment Variables
-No environment variables are required for basic deployment. Render automatically provides:
-- `PORT`: The port to bind to (handled automatically by Gunicorn command)
-
-Optional environment variables:
-- `RENDER`: Set to `true` to force demo mode (automatically set by Render)
-
-## API Documentation
-
-### Base URL
-- **Local**: `http://localhost:5000`
-- **Deployed**: `https://your-app-name.onrender.com`
-
-### Endpoints
-
-#### 1. Health Check
-```http
-GET /health
-```
-
-**Response:**
-```json
-{
-  "status": "healthy",
-  "service": "Linux Privilege Escalation Automation Toolkit",
-  "timestamp": "2026-10-01T12:00:00.000000",
-  "mode": "demo"
-}
-```
-
-#### 2. API Information
-```http
-GET /api/info
-```
-
-**Response:**
-```json
-{
-  "success": true,
-  "service": "Linux Privilege Escalation Detection Toolkit",
-  "description": "Detection-only security auditing toolkit...",
-  "version": "1.0.0",
-  "mode": "demo",
-  "scanner_available": true,
-  "modules": ["system_info", "suid_scan", ...],
-  "security_notice": "This toolkit is for authorized security auditing only..."
-}
-```
-
-#### 3. Run Security Scan
-```http
-POST /api/scan
-Content-Type: application/json
-
-{
-  "type": "full"
-}
-```
-
-**Parameters:**
-- `type` (optional): `"full"` or `"quick"` (default: `"full"`)
-
-**Response:**
-```json
-{
-  "success": true,
-  "timestamp": "2026-10-01T12:00:00.000000",
-  "mode": "demo",
-  "scan_type": "full",
-  "summary": {
-    "INFO": 3,
-    "MEDIUM": 1
-  },
-  "findings": [
-    {
-      "title": "Finding title",
-      "evidence": "Evidence details",
-      "severity": "INFO",
-      "recommendation": "Recommended action"
-    }
-  ],
-  "total_findings": 4
-}
-```
-
-#### 4. Get Scan Report
-```http
-GET /api/report?format=json
-```
-
-**Parameters:**
-- `format` (optional): `"json"`, `"txt"`, or `"html"` (default: `"json"`)
-
-**Response (JSON):**
-```json
-{
-  "success": true,
-  "generated": "2026-10-01T12:00:00.000000",
-  "summary": {...},
-  "findings": [...]
-}
-```
-
-**Response (TXT):**
-Plain text report
-
-**Response (HTML):**
-Styled HTML report
-
-### Error Responses
-
-All endpoints return consistent error responses:
-
-```json
-{
-  "success": false,
-  "error": "Error description"
-}
-```
-
-Common HTTP status codes:
-- `200`: Success
-- `400`: Bad request (invalid parameters)
-- `404`: Endpoint not found
-- `500`: Internal server error
-
-## Security Notice
-
-⚠️ **IMPORTANT**: This toolkit is designed for **authorized security auditing** and **controlled environments only**.
-
-### What This Toolkit Does:
-- ✅ Detects security misconfigurations
-- ✅ Identifies potential privilege escalation vectors
-- ✅ Provides remediation recommendations
-- ✅ Generates detailed security reports
-
-### What This Toolkit Does NOT Do:
-- ❌ Execute privilege escalation exploits
-- ❌ Perform arbitrary command execution
-- ❌ Modify system configurations
-- ❌ Create backdoors or reverse shells
-- ❌ Exploit vulnerabilities
-
-### Safe Deployment Mode
-
-When deployed on Render (or similar platforms), the toolkit runs in **DEMO MODE**:
-- Returns controlled demonstration data
-- Does NOT execute system commands
-- Does NOT access sensitive system files
-- Provides API functionality demonstration only
-
-For **real security audits**, deploy locally on Kali Linux where you have proper authorization and control.
-
-### Legal Disclaimer
-
-Only use this toolkit on systems you own or have explicit written permission to test. Unauthorized access to computer systems is illegal. The authors are not responsible for misuse of this tool.
-
-## Limitations / Future Scope
-
-- `kernel_cves` in `config/signatures.json` is a small static list for demonstration, not a
-  live feed. A production version should query a maintained source such as the NVD API.
-- `service_scan` reads unit files directly rather than querying a running systemd, so it works
-  the same whether or not systemd is actually managing services on the host.
-- No remediation is performed automatically; every finding only suggests a fix.
-- Deployed/Demo mode has limited functionality for security reasons.
-- Possible next steps: multi-host scanning over SSH, a report diff between scans, and an
-  optional (confirmation-gated) auto-remediation mode.
-
-## Testing
-
-### Test Local Scanner
-```bash
-python3 main.py
-```
-
-### Test Backend Locally
-```bash
-# Terminal 1: Start server
-python app.py
-
-# Terminal 2: Test endpoints
 curl http://localhost:5000/health
-curl http://localhost:5000/api/info
-curl -X POST http://localhost:5000/api/scan -H "Content-Type: application/json" -d '{"type":"full"}'
-curl http://localhost:5000/api/report?format=json
 ```
 
-### Test Deployed API
+Request a demonstration scan:
+
 ```bash
-# Replace with your Render URL
-export API_URL="https://your-app-name.onrender.com"
-
-curl $API_URL/health
-curl $API_URL/api/info
-curl -X POST $API_URL/api/scan -H "Content-Type: application/json" -d '{"type":"full"}'
-curl "$API_URL/api/report?format=json"
+curl -X POST http://localhost:5000/api/scan \
+  -H "Content-Type: application/json" \
+  -d '{"type":"full"}'
 ```
 
-## File Structure
+Retrieve a report:
 
-```
-linux-privesc-toolkit/
-├── app.py                    # Flask backend entry point
-├── main.py                   # CLI scanner entry point
-├── requirements.txt          # Python dependencies
-├── render.yaml              # Render deployment config
-├── README.md                # This file
-├── demo.sh                  # Demo script
-├── config/
-│   └── signatures.json      # Detection rules
-├── modules/
-│   ├── __init__.py
-│   ├── system_info.py       # System information scanner
-│   ├── suid_scan.py         # SUID/SGID scanner
-│   ├── permission_scan.py   # Permission scanner
-│   ├── sudo_scan.py         # Sudo rules scanner
-│   ├── cron_scan.py         # Cron jobs scanner
-│   ├── service_scan.py      # Systemd services scanner
-│   ├── kernel_scan.py       # Kernel CVE scanner
-│   ├── capability_scan.py   # Capabilities scanner
-│   ├── report_html.py       # HTML report generator
-│   └── config_loader.py     # Config loader utility
-├── reports/                 # Generated reports (local mode)
-└── screenshots/             # Screenshots (optional)
+```bash
+curl "http://localhost:5000/api/report?format=json"
 ```
 
-## Contributing
+**Demo limitation:** The deployed API uses controlled sample data. Do not describe its demonstration findings as results from scanning a real Linux host.
 
-This is a security auditing tool. Contributions should:
-- Maintain the detection-only philosophy
-- Not add exploitation capabilities
-- Include proper documentation
-- Follow secure coding practices
+## 🧪 Testing and Verification
 
-## License
+The project can be verified through a combination of API checks and controlled local test cases.
 
-[Specify your license here]
+Recommended checks include:
 
-## Support
+1. Confirm the scanner starts successfully in the intended Linux environment.
+2. Inspect the generated TXT, JSON, and HTML reports.
+3. Verify individual detection rules against known, controlled configurations.
+4. Check how the scanner handles insufficient permissions and missing optional utilities.
+5. Confirm that API endpoints return the documented response formats.
+6. Verify that deployed demo mode does not execute host commands.
 
-For issues, questions, or contributions, please open an issue on the project repository.
+The commands in this README describe how to exercise the application; they should not be interpreted as evidence that every module has passed a test.
+
+## ⚠️ Limitations
+
+- Kernel vulnerability references are based on a small local list rather than a live CVE feed.
+- The service scanner reads unit files directly instead of querying a running systemd manager.
+- Detection results depend on permissions, environment, and the available rules.
+- No automatic remediation is performed.
+- Deployed demo mode has intentionally limited functionality.
+- Findings require contextual review before being treated as confirmed vulnerabilities.
+
+## 🔮 Future Enhancements
+
+Potential areas for future development include:
+
+- Integration with a maintained vulnerability reference source such as the NVD.
+- Automated regression tests for detection rules.
+- Scan-to-scan report comparison.
+- Improved evidence and remediation guidance.
+- Multi-host auditing over authenticated SSH.
+- Carefully controlled, confirmation-gated remediation capabilities.
+
+These are proposed enhancements and should not be interpreted as existing features.
+
+## 🔐 Security and Responsible Use
+
+This toolkit is intended for authorized security assessments, educational use, and controlled environments.
+
+- Scan only systems you own or have explicit permission to assess.
+- Review evidence before concluding that a vulnerability exists.
+- Use recommendations as a starting point for investigation and remediation.
+- Do not treat demonstration data as evidence of a real security scan.
+- Follow applicable laws and responsible disclosure practices.
+
+The toolkit is designed to detect potential security misconfigurations. It does not execute privilege-escalation exploits or automatically modify system configurations.
+
+## 📄 License
+
+A license has not yet been specified in the supplied project documentation. Add an appropriate license file before claiming that the project is licensed for open-source reuse.
+
+## 👨‍💻 Author
+
+**Omkar Raju Gurav**  
+Computer Science and Engineering
+
+GitHub: https://github.com/omkar2xt
+
+---
+
+*This project reflects practical work in Python programming, Linux security auditing, modular application design, and security report generation. Local scanner development and testing are associated with a Linux virtual machine running in Oracle VM VirtualBox.*
