@@ -428,7 +428,7 @@ The toolkit is designed to detect potential security misconfigurations. It does 
 
 ## 📄 License
 
-A license has not yet been specified in the supplied project documentation. Add an appropriate license file before claiming that the project is licensed for open-source reuse.
+No license has been specified yet. All rights are reserved by default to the extent permitted by applicable law. Please contact the repository owner for permission before reusing, modifying, or redistributing the code.
 
 ## 👨‍💻 Author
 
