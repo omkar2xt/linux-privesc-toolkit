@@ -22,7 +22,8 @@ The project also provides a Flask-based demonstration API that illustrates the a
 
 > **Security principle:** Detect potential weaknesses, understand the evidence, and recommend corrective action — without executing privilege-escalation exploits.
 
-![Uploading image.png…]()
+<img width="1536" height="1024" alt="image" src="https://github.com/user-attachments/assets/cf9aef22-1e69-4ec5-853e-c90afde65f17" />
+
 
 
 ## 🎯 Project Objectives
